@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modelo MEC Corporativo - Reconexión IMEI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            red: '#DA291C',
+                            dark: '#0F172A',
+                            gray: '#F8FAFC',
+                            slate: '#334155',
+                            border: '#E2E8F0',
+                            critical: '#B91C1C',
+                            success: '#059669'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F8FAFC;
+            overflow: hidden; /* Evita scroll global, el scroll ocurre dentro de cada slide */
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Estructura del Slider de Pantalla Completa */
+        .slider-viewport {
+            width: 100vw;
+            height: calc(100vh - 5rem - 4rem); /* Altura total menos Header (5rem) y Footer (4rem) */
+            overflow: hidden;
+            position: relative;
+        }
+
+        .slider-track {
+            display: flex;
+            width: 400vw; /* 4 slides exactos */
+            height: 100%;
+            transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+            will-change: transform;
+        }
+
+        .slide {
+            width: 100vw;
+            height: 100%;
+            overflow-y: auto; /* Permite scroll vertical dentro del slide si el contenido es largo */
+            overflow-x: hidden;
+            padding-bottom: 2rem;
+        }
+
+        /* Scrollbars corporativos */
+        .slide::-webkit-scrollbar, .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .slide::-webkit-scrollbar-track, .custom-scrollbar::-webkit-scrollbar-track { background: #F1F5F9; }
+        .slide::-webkit-scrollbar-thumb, .custom-scrollbar::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 4px; }
+        .slide::-webkit-scrollbar-thumb:hover, .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
+
+        /* Estilos interactivos para Nav y Tablas */
+        .nav-btn { border-bottom: 3px solid transparent; }
+        .nav-btn.active { color: #DA291C; border-bottom: 3px solid #DA291C; }
+        
+        .matrix-row-header { cursor: pointer; transition: background-color 0.2s; }
+        .matrix-row-header:hover { background-color: #F8FAFC; }
+        .matrix-details {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s cubic-bezier(0, 1, 0, 1);
+        }
+        .matrix-details.open {
+            max-height: 500px; /* Altura suficiente para el contenido */
+            transition: max-height 0.6s ease-in-out;
+        }
+        .rotate-icon { transition: transform 0.3s ease; }
+        .open .rotate-icon { transform: rotate(180deg); }
+    </style>
+</head>
+<body class="flex flex-col h-screen text-slate-800">
+
+    <header class="h-20 bg-white border-b border-brand-border flex items-center justify-between px-6 lg:px-12 shrink-0 z-20 shadow-sm relative">
+        <div class="flex items-center space-x-4">
+            <div class="w-10 h-10 bg-brand-red rounded-lg flex items-center justify-center text-white font-bold text-xl shadow-sm">C</div>
+            <div class="flex flex-col">
+                <h1 class="text-base lg:text-lg font-extrabold text-brand-dark leading-tight tracking-tight">Medición de la Experiencia del Cliente (MEC)</h1>
+                <span class="text-xs text-slate-500 font-medium">Reconexión IMEI • Normativa COPC & ISO 20252:2019</span>
+            </div>
+        </div>
+        <nav class="hidden md:flex space-x-2 h-full items-end" id="header-nav">
+            <button class="nav-btn active h-full px-4 pb-4 pt-6 text-sm font-semibold text-slate-500 hover:text-brand-red transition" data-index="0">1. Contexto Normativo</button>
+            <button class="nav-btn h-full px-4 pb-4 pt-6 text-sm font-semibold text-slate-500 hover:text-brand-red transition" data-index="1">2. Evolución GANA vs MEC</button>
+            <button class="nav-btn h-full px-4 pb-4 pt-6 text-sm font-semibold text-slate-500 hover:text-brand-red transition" data-index="2">3. Operativa IMEI</button>
+            <button class="nav-btn h-full px-4 pb-4 pt-6 text-sm font-semibold text-slate-500 hover:text-brand-red transition" data-index="3">4. Matriz de Valoración</button>
+        </nav>
+    </header>
+
+    <main class="slider-viewport bg-slate-50">
+        <div class="slider-track" id="slider">
+            
+            <section class="slide flex justify-center py-10 px-6 lg:px-12">
+                <div class="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-12 gap-10 items-center h-fit">
+                    <div class="lg:col-span-7 space-y-6">
+                        <div class="inline-flex items-center space-x-2 bg-slate-200 px-3 py-1 rounded-full text-xs font-bold text-slate-700 uppercase tracking-wider">
+                            <i class="fa-solid fa-scale-balanced text-brand-red"></i>
+                            <span>Alineación Estratégica Institucional</span>
+                        </div>
+                        <h2 class="text-4xl lg:text-5xl font-extrabold text-brand-dark leading-tight">
+                            Transición a la Experiencia: <span class="text-brand-red block mt-2">Estándar COPC & MEC</span>
+                        </h2>
+                        <p class="text-slate-600 text-base leading-relaxed text-justify">
+                            En estricto cumplimiento con los estándares internacionales de gestión operativa <strong>COPC (Customer Operations Performance Center)</strong> y las normas <strong>ISO 20252:2019 e ISO 9001:2015</strong>, la organización migra del modelo evaluativo tradicional hacia la <strong>Medición de la Experiencia del Cliente (MEC)</strong>.
+                        </p>
+                        <p class="text-slate-600 text-base leading-relaxed text-justify">
+                            El modelo MEC se aleja de la supervisión transaccional rígida y enfoca la medición en los <strong>comportamientos observables</strong> que impactan directamente los indicadores críticos del negocio: Resolución al Primer Contacto (FCR), Reducción de Churn y el Net Promoter Score (NPS).
+                        </p>
+                        <div class="bg-white border-l-4 border-brand-red p-5 rounded-r-xl shadow-sm">
+                            <h4 class="font-bold text-brand-dark flex items-center mb-2">
+                                <i class="fa-solid fa-bullseye text-brand-red mr-2"></i>Objetivo en Procesos de Reconexión
+                            </h4>
+                            <p class="text-sm text-slate-600 text-justify leading-relaxed">
+                                Garantizar el restablecimiento de los servicios de voz y datos (Liberación de IMEI) de manera íntegra, diagnosticando la causa raíz del bloqueo y brindando soporte emocional para contener la fricción derivada de un equipo suspendido por hurto o extravío.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="lg:col-span-5 grid grid-cols-2 gap-4">
+                        <!-- Pilares Ponderación -->
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 text-center space-y-3">
+                            <div class="w-12 h-12 bg-red-50 text-brand-red rounded-xl flex items-center justify-center mx-auto text-xl"><i class="fa-solid fa-wrench"></i></div>
+                            <h3 class="font-bold text-brand-dark text-xs uppercase tracking-wider">Pilar Solución</h3>
+                            <div class="text-3xl font-black text-brand-red">60%</div>
+                            <p class="text-2xs text-slate-500 font-semibold">Resolución Definitiva (FCR)</p>
+                        </div>
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 text-center space-y-3">
+                            <div class="w-12 h-12 bg-sky-50 text-sky-600 rounded-xl flex items-center justify-center mx-auto text-xl"><i class="fa-solid fa-clock"></i></div>
+                            <h3 class="font-bold text-brand-dark text-xs uppercase tracking-wider">Gestión Tiempos</h3>
+                            <div class="text-3xl font-black text-sky-600">25%</div>
+                            <p class="text-2xs text-slate-500 font-semibold">Tiempos y Certidumbre</p>
+                        </div>
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 text-center space-y-3">
+                            <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center mx-auto text-xl"><i class="fa-solid fa-heart-pulse"></i></div>
+                            <h3 class="font-bold text-brand-dark text-xs uppercase tracking-wider">Emociones</h3>
+                            <div class="text-3xl font-black text-emerald-600">15%</div>
+                            <p class="text-2xs text-slate-500 font-semibold">Inteligencia Emocional</p>
+                        </div>
+                        <div class="bg-slate-800 p-6 rounded-2xl shadow-sm text-center space-y-3">
+                            <div class="w-12 h-12 bg-slate-700 text-white rounded-xl flex items-center justify-center mx-auto text-xl"><i class="fa-solid fa-folder-tree"></i></div>
+                            <h3 class="font-bold text-white text-xs uppercase tracking-wider">Administrativo</h3>
+                            <div class="text-3xl font-black text-slate-300">0%</div>
+                            <p class="text-2xs text-slate-400 font-semibold">Fase Descriptiva Inicial</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="slide flex justify-center py-10 px-6 lg:px-12">
+                <div class="w-full max-w-6xl space-y-8 h-fit">
+                    <div class="text-center space-y-2 max-w-3xl mx-auto">
+                        <h2 class="text-3xl font-extrabold text-brand-dark">Evolución de la Matriz de Calidad</h2>
+                        <p class="text-slate-500 text-sm">Análisis comparativo del cambio estructural en los criterios de evaluación operativa.</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <!-- GANA -->
+                        <div class="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+                            <div class="flex items-center justify-between pb-4 border-b border-slate-100">
+                                <div class="flex items-center space-x-3">
+                                    <span class="w-10 h-10 bg-slate-100 text-slate-500 rounded-lg flex items-center justify-center font-bold text-xl"><i class="fa-solid fa-clock-rotate-left"></i></span>
+                                    <div>
+                                        <h3 class="text-lg font-bold text-slate-800">Modelo Anterior (GANA)</h3>
+                                        <span class="text-xs text-slate-500 font-semibold uppercase tracking-wider">Enfoque Transaccional</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <ul class="space-y-4 text-sm text-slate-600">
+                                <li class="flex items-start"><i class="fa-solid fa-xmark text-slate-400 mt-1 mr-3 shrink-0"></i><span>Ítems orientados al cumplimiento rígido de guiones, priorizando la lectura sobre la comprensión del requerimiento.</span></li>
+                                <li class="flex items-start"><i class="fa-solid fa-xmark text-slate-400 mt-1 mr-3 shrink-0"></i><span>Métrica de cálculo fragmentada en bloques alfabéticos (A, B, C, D) con dispersión del peso porcentual.</span></li>
+                                <li class="flex items-start"><i class="fa-solid fa-xmark text-slate-400 mt-1 mr-3 shrink-0"></i><span>Errores de tipificación o documentales restaban puntuación directa y severa a la nota final del consultor.</span></li>
+                                <li class="flex items-start"><i class="fa-solid fa-xmark text-slate-400 mt-1 mr-3 shrink-0"></i><span>Ausencia de valoración explícita sobre la gestión de la frustración, empatía y habilidades blandas (Soft Skills).</span></li>
+                            </ul>
+                        </div>
+
+                        <!-- MEC -->
+                        <div class="bg-red-50/50 p-8 rounded-2xl border-2 border-brand-red shadow-sm space-y-6 relative overflow-hidden">
+                            <div class="absolute top-0 right-0 bg-brand-red text-white text-2xs font-bold px-4 py-1.5 rounded-bl-lg tracking-widest uppercase">Modelo Actual</div>
+                            <div class="flex items-center justify-between pb-4 border-b border-red-100">
+                                <div class="flex items-center space-x-3">
+                                    <span class="w-10 h-10 bg-red-100 text-brand-red rounded-lg flex items-center justify-center font-bold text-xl"><i class="fa-solid fa-check-double"></i></span>
+                                    <div>
+                                        <h3 class="text-lg font-bold text-brand-dark">Modelo MEC</h3>
+                                        <span class="text-xs text-brand-red font-semibold uppercase tracking-wider">Enfoque Experiencial (COPC)</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <ul class="space-y-4 text-sm text-slate-800 font-medium">
+                                <li class="flex items-start"><i class="fa-solid fa-check text-brand-red mt-1 mr-3 shrink-0"></i><span>Evaluación basada en <strong>comportamientos observables</strong> enfocados genuinamente en la percepción y resolución para el usuario.</span></li>
+                                <li class="flex items-start"><i class="fa-solid fa-check text-brand-red mt-1 mr-3 shrink-0"></i><span>Ponderación unificada en 3 ejes centrales: Solución, Tiempos y Emociones.</span></li>
+                                <li class="flex items-start"><i class="fa-solid fa-check text-brand-red mt-1 mr-3 shrink-0"></i><span>Mitigación de riesgo: Ítems administrativos y documentales pasan a fase descriptiva (0% impacto inicial en nota).</span></li>
+                                <li class="flex items-start"><i class="fa-solid fa-check text-brand-red mt-1 mr-3 shrink-0"></i><span>Inclusión y medición estricta de la escucha activa, contención emocional y trato digno frente a fallas del servicio.</span></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="slide flex justify-center py-10 px-6 lg:px-12">
+                <div class="w-full max-w-7xl mx-auto space-y-8 h-fit">
+                    <div class="flex flex-col md:flex-row justify-between items-end border-b border-slate-200 pb-4">
+                        <div class="max-w-3xl space-y-2">
+                            <span class="text-xs font-bold uppercase tracking-widest text-brand-red">Lineamientos Operativos</span>
+                            <h2 class="text-3xl font-extrabold text-brand-dark">Protocolos Críticos: Reconexión IMEI</h2>
+                            <p class="text-slate-500 text-sm">Aplicación de la normativa en el uso de plataformas (AC / Reporte y Liberación) y manejo de excepciones.</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <!-- Selección de Aplicativo -->
+                        <div class="bg-white rounded-xl p-6 border border-slate-200 shadow-sm space-y-4">
+                            <div class="w-10 h-10 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center text-lg"><i class="fa-solid fa-laptop-code"></i></div>
+                            <h3 class="text-sm font-bold text-brand-dark uppercase tracking-wider">1. Criterio de Plataforma</h3>
+                            <p class="text-xs text-slate-600 leading-relaxed text-justify">
+                                La elección del aplicativo para el reporte/liberación depende del elemento afectado. Indague correctamente antes de ejecutar.
+                            </p>
+                            <ul class="text-xs text-slate-700 space-y-2 bg-slate-50 p-3 rounded-lg border border-slate-100">
+                                <li>• Reporte SIM y EQUIPO -> <strong>Aplicativo AC</strong></li>
+                                <li>• Reporte SOLO EQUIPO -> <strong>Reporte y Liberación</strong></li>
+                            </ul>
+                        </div>
+                        
+                        <!-- Mal Reporte y Escalamientos -->
+                        <div class="bg-white rounded-xl p-6 border border-slate-200 shadow-sm space-y-4">
+                            <div class="w-10 h-10 rounded-lg bg-sky-50 text-sky-600 flex items-center justify-center text-lg"><i class="fa-solid fa-headset"></i></div>
+                            <h3 class="text-sm font-bold text-brand-dark uppercase tracking-wider">2. Gestión de "Mal Reporte"</h3>
+                            <p class="text-xs text-slate-600 leading-relaxed text-justify">
+                                Si el IMEI a liberar registra un reporte erróneo generado por Canal Presencial o existe inconsistencia en la red.
+                            </p>
+                            <ul class="text-xs text-slate-700 space-y-2 bg-slate-50 p-3 rounded-lg border border-slate-100">
+                                <li>• Escalar caso a <strong>Control IMEI por MyIT</strong>.</li>
+                                <li>• Escalar cuando el IMEI en estado "Libre" sigue "Reportado" en IMEI Colombia.</li>
+                            </ul>
+                        </div>
+
+                        <!-- Seguridad Habeas Data -->
+                        <div class="bg-white rounded-xl p-6 border-2 border-red-100 shadow-sm space-y-4">
+                            <div class="w-10 h-10 rounded-lg bg-red-100 text-red-600 flex items-center justify-center text-lg"><i class="fa-solid fa-shield-halved"></i></div>
+                            <h3 class="text-sm font-bold text-red-700 uppercase tracking-wider">3. Seguridad (Cero Tolerancia)</h3>
+                            <p class="text-xs text-slate-600 leading-relaxed text-justify">
+                                La validación de la titularidad es inquebrantable. Las respuestas de validación deben ser exactas.
+                            </p>
+                            <ul class="text-xs text-slate-700 space-y-2 bg-red-50 p-3 rounded-lg border border-red-100">
+                                <li>• <strong>No se permiten errores</strong> en Nombres ni Cédula.</li>
+                                <li>• Es mandatorio solicitar la <strong>Clave de Ingreso</strong> si la línea la posee.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="slide flex justify-center py-6 px-4 lg:px-12">
+                <div class="w-full max-w-7xl mx-auto flex flex-col h-full">
+                    <div class="flex flex-col md:flex-row justify-between items-end border-b border-slate-200 pb-3 shrink-0 gap-4 mb-4">
+                        <div>
+                            <span class="text-xs font-bold uppercase tracking-widest text-brand-red">Herramienta de Auditoría</span>
+                            <h2 class="text-2xl font-extrabold text-brand-dark">Matriz Oficial: Ficha Reconexión IMEI</h2>
+                            <p class="text-slate-500 text-sm mt-1">Desglose literal de comportamientos, criticidad y criterios de cumplimiento.</p>
+                        </div>
+                    </div>
+
+                    <!-- Layout B2B Interactivo -->
+                    <div class="flex-1 flex flex-col lg:flex-row gap-4 min-h-0">
+                        
+                        <!-- Panel Izquierdo: Menú de Pestañas -->
+                        <div class="lg:w-1/4 shrink-0 space-y-2 flex flex-col overflow-y-auto pr-2 custom-scrollbar">
+                            <button class="matriz-tab w-full text-left px-4 py-3 rounded-xl border-2 border-brand-red bg-red-50 shadow-sm transition flex justify-between items-center group" data-target="solucion">
+                                <div>
+                                    <div class="text-sm font-bold text-brand-dark transition tab-title">Pilar Solución</div>
+                                    <div class="text-xs text-slate-500 mt-0.5">5 Comportamientos</div>
+                                </div>
+                                <span class="tab-badge bg-brand-red text-white text-xs font-black px-2 py-1 rounded">60%</span>
+                            </button>
+                            
+                            <button class="matriz-tab w-full text-left px-4 py-3 rounded-xl border-2 border-transparent bg-white hover:bg-slate-100 transition flex justify-between items-center group" data-target="tiempos">
+                                <div>
+                                    <div class="text-sm font-bold text-slate-600 transition tab-title">Pilar Tiempos</div>
+                                    <div class="text-xs text-slate-500 mt-0.5">6 Comportamientos</div>
+                                </div>
+                                <span class="tab-badge bg-slate-200 text-slate-600 text-xs font-black px-2 py-1 rounded">25%</span>
+                            </button>
+                            
+                            <button class="matriz-tab w-full text-left px-4 py-3 rounded-xl border-2 border-transparent bg-white hover:bg-slate-100 transition flex justify-between items-center group" data-target="emociones">
+                                <div>
+                                    <div class="text-sm font-bold text-slate-600 transition tab-title">Pilar Emociones</div>
+                                    <div class="text-xs text-slate-500 mt-0.5">6 Comportamientos</div>
+                                </div>
+                                <span class="tab-badge bg-slate-200 text-slate-600 text-xs font-black px-2 py-1 rounded">15%</span>
+                            </button>
+
+                            <div class="border-t border-slate-200 my-1"></div>
+
+                            <button class="matriz-tab w-full text-left px-4 py-3 rounded-xl border-2 border-transparent bg-slate-800 hover:bg-slate-700 transition flex justify-between items-center group" data-target="administrativo">
+                                <div>
+                                    <div class="text-sm font-bold text-white transition tab-title">Administrativo</div>
+                                    <div class="text-xs text-slate-400 mt-0.5">5 Comportamientos</div>
+                                </div>
+                                <span class="tab-badge bg-slate-600 text-white text-xs font-black px-2 py-1 rounded">0%</span>
+                            </button>
+
+                            <button class="matriz-tab w-full text-left px-4 py-3 rounded-xl border-2 border-transparent bg-red-50 hover:bg-red-100 transition flex justify-between items-center group" data-target="inaceptables">
+                                <div>
+                                    <div class="text-sm font-bold text-red-700 transition tab-title flex items-center"><i class="fa-solid fa-triangle-exclamation mr-2"></i>Inaceptables</div>
+                                    <div class="text-xs text-red-500 mt-0.5">Cero Tolerancia</div>
+                                </div>
+                                <span class="tab-badge bg-red-200 text-red-800 text-xs font-black px-2 py-1 rounded">FALLA</span>
+                            </button>
+                        </div>
+
+                        <!-- Panel Derecho: Data Grid -->
+                        <div class="lg:w-3/4 bg-white rounded-xl border border-slate-200 shadow-sm flex flex-col overflow-hidden">
+                            <!-- Cabecera de Grid -->
+                            <div class="bg-slate-50 border-b border-slate-200 px-5 py-3 shrink-0 flex justify-between items-center">
+                                <h3 class="font-bold text-slate-800 text-base" id="table-title">Comportamientos Obsevables</h3>
+                                <div id="table-header-badge" class="flex items-center space-x-2 text-xs font-semibold bg-white border border-slate-200 px-2 py-1 rounded-md shadow-sm text-brand-dark">
+                                    <span class="w-2 h-2 rounded-full bg-brand-red"></span>
+                                    <span>Ponderación</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Contenedor Scrollable del Grid -->
+                            <div class="overflow-y-auto flex-1 custom-scrollbar bg-white p-4">
+                                <div id="matrix-container" class="space-y-3">
+                                    <!-- JS Injecta los items (Acordeones) aquí -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <footer class="h-16 bg-white border-t border-slate-200 shrink-0 flex items-center justify-between px-6 lg:px-12 z-20 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] relative">
+        <button id="prev-btn" class="px-5 py-2 text-sm font-bold text-slate-500 bg-slate-100 rounded-lg hover:bg-slate-200 hover:text-brand-dark disabled:opacity-30 disabled:cursor-not-allowed transition flex items-center">
+            <i class="fa-solid fa-chevron-left mr-2"></i> Atrás
+        </button>
+        
+        <div class="flex items-center space-x-3 text-xs font-semibold text-slate-400">
+            <span>Uso Corporativo Interno</span>
+            <span class="w-1.5 h-1.5 rounded-full bg-slate-300"></span>
+            <span>Versión 2026</span>
+        </div>
+
+        <button id="next-btn" class="px-5 py-2 text-sm font-bold text-white bg-brand-red rounded-lg hover:bg-red-700 disabled:opacity-30 disabled:cursor-not-allowed transition flex items-center shadow-sm">
+            Siguiente <i class="fa-solid fa-chevron-right ml-2"></i>
+        </button>
+    </footer>
+
+    <script>
+        // --- 1. DATOS LITERALES DE LA MATRIZ DE RECONEXIÓN IMEI ---
+        // Incorpora Clasificación de Criticidad y Ejemplos de Cumplimiento.
+        const dataMatriz = {
+            solucion: {
+                title: "Pilar Solución",
+                badgeText: "Ponderación: 60%",
+                badgeColor: "text-brand-dark",
+                dotColor: "bg-brand-red",
+                items: [
+                    { 
+                        item: "Indaga y valida antes de gestionar", 
+                        critical: true, 
+                        desc: "Garantizar la verificación de la actividad MIN-IMEI y la validación estricta de titularidad.",
+                        cumple: "Verifica en AC la actividad MIN-IMEI de la línea antes de procesar el reporte o liberación. Solicita datos de seguridad exactos.",
+                        nocumple: "Ejecuta un desbloqueo sin validar si el IMEI tuvo tráfico en la red de Claro o ignora el Habeas Data."
+                    },
+                    { 
+                        item: "Valida funcionamiento con el cliente", 
+                        critical: true, 
+                        desc: "Asegurar que el servicio haya sido restablecido exitosamente.",
+                        cumple: "Confirma con el usuario que la línea registra señal tras realizar la liberación en el sistema.",
+                        nocumple: "Termina el contacto tras aplicar el comando sin confirmar si el equipo salió del estado 'Solo llamadas de emergencia'."
+                    },
+                    { 
+                        item: "Explica causa y solución", 
+                        critical: false, 
+                        desc: "Contextualizar al usuario sobre el estado de su requerimiento.",
+                        cumple: "Aclara al cliente por qué el equipo se encuentra en banda negativa y le explica si el trámite se hará por AC o Reporte y Liberación.",
+                        nocumple: "Aplica la liberación en silencio total sin brindarle contexto técnico al usuario."
+                    },
+                    { 
+                        item: "Confirma el entendimiento del cliente", 
+                        critical: false, 
+                        desc: "Cerciorarse de que la información entregada fue comprendida.",
+                        cumple: "Valida de forma proactiva si el cliente comprendió los tiempos de respuesta o el proceso de denuncio (Guion Policía).",
+                        nocumple: "Cierra la llamada asumiendo que el cliente entendió todo, sin hacer una validación explícita."
+                    },
+                    { 
+                        item: "Entrega de la solución (trámites y/o Información)", 
+                        critical: true, 
+                        desc: "Ejecución correcta y completa del proceso en las plataformas dispuestas.",
+                        cumple: "Documenta el reporte o liberación generando el tickler correspondiente en los aplicativos (ej. MARCAVDC).",
+                        nocumple: "Omite generar el tickler, dejando el proceso sin rastro en el sistema, lo que genera reincidencia."
+                    }
+                ]
+            },
+            tiempos: {
+                title: "Gestión de Tiempos",
+                badgeText: "Ponderación: 25%",
+                badgeColor: "text-sky-800",
+                dotColor: "bg-sky-500",
+                items: [
+                    { 
+                        item: "Acuerda tiempos y siguientes pasos", 
+                        critical: false, 
+                        desc: "Informar los Acuerdos de Nivel de Servicio (ANS).",
+                        cumple: "Informa claramente que el proceso de liberación ante un 'Mal Reporte' toma un máximo de 24h hábiles.",
+                        nocumple: "No brinda un estimado de tiempo, dejando al cliente en incertidumbre."
+                    },
+                    { 
+                        item: "Entrega Ticket informativo / Radicado", 
+                        critical: true, 
+                        desc: "Proporcionar trazabilidad del caso al cliente.",
+                        cumple: "Entrega el número de caso (Tickler) generado tras gestionar la suspensión o liberación.",
+                        nocumple: "Finaliza la gestión sin brindar número de seguimiento al usuario."
+                    },
+                    { 
+                        item: "Transfiere con contexto claro", 
+                        critical: true, 
+                        desc: "Realizar escalamientos documentados al segundo nivel.",
+                        cumple: "Escala un 'Mal Reporte' al grupo Control IMEI a través de MyIT, detallando toda la información recabada.",
+                        nocumple: "Realiza transferencia ciega del cliente (Peloteo) sin haber documentado la validación previa."
+                    },
+                    { 
+                        item: "Evita silencios prolongados", 
+                        critical: false, 
+                        desc: "Mantener la comunicación fluida y evitar la percepción de abandono.",
+                        cumple: "Retoma contacto verbal con el usuario de manera constante mientras procesa la liberación en el sistema.",
+                        nocumple: "Genera baches de silencio extensos (superiores a 1 minuto) mientras la herramienta AC carga."
+                    },
+                    { 
+                        item: "Relata acciones en línea", 
+                        critical: false, 
+                        desc: "Dar visibilidad de las acciones que se están ejecutando.",
+                        cumple: "Indica: 'Permítame en línea, estoy validando los 14 dígitos de su IMEI en la plataforma...'",
+                        nocumple: "Mantiene mutismo absoluto mientras trabaja en la solicitud."
+                    },
+                    { 
+                        item: "Cumple protocolos de espera", 
+                        critical: false, 
+                        desc: "Uso adecuado de la herramienta de hold/espera.",
+                        cumple: "Solicita autorización formal antes de ubicar la llamada en hold para consultar bases de datos.",
+                        nocumple: "Activa la música de espera de forma abrupta sin consultar al cliente."
+                    }
+                ]
+            },
+            emociones: {
+                title: "Gestión de Emociones",
+                badgeText: "Ponderación: 15%",
+                badgeColor: "text-emerald-800",
+                dotColor: "bg-emerald-500",
+                items: [
+                    { 
+                        item: "Lidera y controla la interacción", 
+                        critical: false, 
+                        desc: "Manejo profesional del contacto.",
+                        cumple: "Conserva el tono profesional y dirige el protocolo de seguridad aunque el cliente presente ofuscación por no tener línea.",
+                        nocumple: "Pierde el control de la llamada, enganchándose en discusiones con el usuario."
+                    },
+                    { 
+                        item: "Ejecuta saludo y presentación", 
+                        critical: false, 
+                        desc: "Cumplimiento del protocolo de bienvenida corporativo.",
+                        cumple: "Aplica íntegramente el saludo estándar de Claro identificando su nombre y área.",
+                        nocumple: "Inicia el contacto de forma informal u omitiendo la identificación corporativa."
+                    },
+                    { 
+                        item: "Escucha sin interrumpir", 
+                        critical: false, 
+                        desc: "Aplicación de la Escucha Activa.",
+                        cumple: "Permite que el cliente detalle cómo ocurrió el evento (hurto/extravío) antes de intervenir.",
+                        nocumple: "Interrumpe constantemente al cliente para exigirle la cédula o datos técnicos."
+                    },
+                    { 
+                        item: "Valida la emoción del cliente", 
+                        critical: false, 
+                        desc: "Uso de empatía y contención.",
+                        cumple: "Utiliza frases puente: 'Comprendo la urgencia de tener su servicio activo, procederemos con la validación de inmediato.'",
+                        nocumple: "Ignora completamente la frustración del cliente, respondiendo de forma robótica o apática."
+                    },
+                    { 
+                        item: "Expresa disposición de solución", 
+                        critical: false, 
+                        desc: "Mostrar proactividad y voluntad de asistencia.",
+                        cumple: "Transmite calidez y seguridad al asumir el compromiso de gestionar el reporte o escalamiento.",
+                        nocumple: "Proyecta desinterés o señala culpabilidad del usuario por el error en el reporte."
+                    },
+                    { 
+                        item: "Realiza cierre cordial y agradecido", 
+                        critical: false, 
+                        desc: "Cumplimiento del protocolo de despedida.",
+                        cumple: "Se despide de manera corporativa agradeciendo el contacto.",
+                        nocumple: "Cuelga de forma abrupta o no se despide tras finalizar el proceso técnico."
+                    }
+                ]
+            },
+            administrativo: {
+                title: "Administrativo",
+                badgeText: "Descriptivo: 0%",
+                badgeColor: "text-slate-800",
+                dotColor: "bg-slate-500",
+                items: [
+                    { 
+                        item: "Ofrecimiento comercial", 
+                        critical: false, 
+                        desc: "Identificación de oportunidades (Si aplica según política).",
+                        cumple: "Realiza sondeo comercial de manera pertinente tras asegurar la resolución.",
+                        nocumple: "Omite el ofrecimiento comercial existiendo campaña o directriz activa."
+                    },
+                    { 
+                        item: "Codifica y documenta correctamente", 
+                        critical: false, 
+                        desc: "Registro de la interacción en los sistemas.",
+                        cumple: "Ingresa el tickler COMENTS detallando validaciones, aprobación de Evidente y gestión realizada. Tipifica bien en Avaya.",
+                        nocumple: "Tipifica erróneamente en el aplicativo para no afectar indicadores de tiempo o rellamada."
+                    },
+                    { 
+                        item: "Promueve la autogestión", 
+                        critical: false, 
+                        desc: "Invitación al uso de canales digitales.",
+                        cumple: "Informa sobre la app Mi Claro o portal web para futuras consultas.",
+                        nocumple: "No menciona las opciones de autogestión corporativas."
+                    },
+                    { 
+                        item: "Direcciona a la encuesta", 
+                        critical: false, 
+                        desc: "Cierre orientado al NPS.",
+                        cumple: "Invita amablemente al usuario a calificar el servicio y transfiere al IVR.",
+                        nocumple: "Omite el direccionamiento a la encuesta de satisfacción."
+                    },
+                    { 
+                        item: "Realiza devolución a tiempo", 
+                        critical: false, 
+                        desc: "Gestión de llamadas caídas.",
+                        cumple: "Retorna el contacto al usuario si la llamada se corta durante un proceso de validación crítica.",
+                        nocumple: "No contacta de vuelta al cliente tras una interrupción técnica."
+                    }
+                ]
+            },
+            inaceptables: {
+                title: "Comportamientos Inaceptables",
+                badgeText: "CERO TOLERANCIA",
+                badgeColor: "text-red-800",
+                dotColor: "bg-red-600",
+                items: [
+                    { 
+                        item: "Vulneración de Habeas Data / Suplantación", 
+                        critical: true, 
+                        desc: "Falla grave a la seguridad de la información.",
+                        cumple: "No Aplica (Es una falta).",
+                        nocumple: "Omitir la validación de identidad (Nombres/Cédula), no solicitar la clave de ingreso a la línea, o realizar una liberación a terceros no autorizados."
+                    },
+                    { 
+                        item: "Altanería, maltrato o corte deliberado", 
+                        critical: true, 
+                        desc: "Falla grave a las políticas de convivencia y trato al cliente.",
+                        cumple: "No Aplica.",
+                        nocumple: "Uso de tono agresivo, ironía, falta de respeto o finalizar intencionalmente la llamada frente a un cliente que reclama por el bloqueo de su equipo."
+                    },
+                    { 
+                        item: "Codificación falsa / Simulación de gestión", 
+                        critical: true, 
+                        desc: "Fraude operativo.",
+                        cumple: "No Aplica.",
+                        nocumple: "Documentar una liberación en el sistema que en realidad no fue ejecutada, o tipificar como consulta una queja para evadir auditorías."
+                    },
+                    { 
+                        item: "Peloteo de usuario / Transferencia Mula", 
+                        critical: true, 
+                        desc: "Evasión de responsabilidad operativa.",
+                        cumple: "No Aplica.",
+                        nocumple: "Enviar al cliente a otra área de servicio al cliente (SAC) sin aplicar el escalamiento obligatorio a Control IMEI por MyIT cuando correspondía."
+                    },
+                    { 
+                        item: "Inclusión de servicios no autorizados", 
+                        critical: true, 
+                        desc: "Práctica comercial abusiva.",
+                        cumple: "No Aplica.",
+                        nocumple: "Activar paquetes de datos, servicios adicionales o seguros sin el consentimiento expreso y verificado del cliente."
+                    },
+                    { 
+                        item: "Uso inadecuado de credenciales y sistemas", 
+                        critical: true, 
+                        desc: "Vulneración de políticas de seguridad TI.",
+                        cumple: "No Aplica.",
+                        nocumple: "Uso de usuarios genéricos, compartir claves del aplicativo AC o Reporte y Liberación, o realizar consultas injustificadas en bases de datos."
+                    }
+                ]
+            }
+        };
+
+        // --- 2. LÓGICA DE LA INTERFAZ DE LA MATRIZ (ACORDEONES) ---
+        const tabs = document.querySelectorAll('.matriz-tab');
+        const matrixContainer = document.getElementById('matrix-container');
+        const titleEl = document.getElementById('table-title');
+        const badgeEl = document.getElementById('table-header-badge');
+
+        function renderMatrix(key) {
+            const data = dataMatriz[key];
+            
+            // Textos Cabecera
+            titleEl.textContent = data.title;
+            badgeEl.className = `flex items-center space-x-2 text-xs font-bold border border-slate-200 px-3 py-1.5 rounded-lg shadow-sm ${data.badgeColor}`;
+            badgeEl.innerHTML = `<span class="w-2 h-2 rounded-full ${data.dotColor}"></span><span>${data.badgeText}</span>`;
+
+            // Limpiar e Inyectar Acordeones
+            matrixContainer.innerHTML = '';
+            
+            data.items.forEach((row, index) => {
+                // Badge de Criticidad
+                let criticBadge = '';
+                if (key === 'inaceptables') {
+                    criticBadge = `<span class="px-2 py-0.5 rounded text-3xs font-black uppercase tracking-wider bg-red-100 text-red-700 border border-red-200">FALTA CRÍTICA</span>`;
+                } else if (row.critical) {
+                    criticBadge = `<span class="px-2 py-0.5 rounded text-3xs font-black uppercase tracking-wider bg-amber-100 text-amber-700 border border-amber-200">CRÍTICO</span>`;
+                } else {
+                    criticBadge = `<span class="px-2 py-0.5 rounded text-3xs font-black uppercase tracking-wider bg-slate-100 text-slate-500 border border-slate-200">NO CRÍTICO</span>`;
+                }
+
+                // Color del título
+                const titleColor = key === 'inaceptables' ? 'text-red-700' : 'text-slate-800';
+
+                // Construcción del elemento DOM
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'border border-slate-200 rounded-xl overflow-hidden bg-white';
+                
+                itemDiv.innerHTML = `
+                    <div class="matrix-row-header p-4 flex justify-between items-center bg-white border-b border-transparent">
+                        <div class="flex items-center gap-4">
+                            <div class="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-xs font-bold text-slate-400 shrink-0">${index + 1}</div>
+                            <div>
+                                <h4 class="font-bold ${titleColor} text-sm flex items-center gap-2">
+                                    ${row.item} ${criticBadge}
+                                </h4>
+                                <p class="text-xs text-slate-500 mt-1">${row.desc}</p>
+                            </div>
+                        </div>
+                        <div class="text-slate-400 rotate-icon shrink-0 ml-4">
+                            <i class="fa-solid fa-chevron-down"></i>
+                        </div>
+                    </div>
+                    <div class="matrix-details bg-slate-50">
+                        <div class="p-4 border-t border-slate-100 grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                            <div class="space-y-1.5 p-3 rounded-lg bg-emerald-50/50 border border-emerald-100">
+                                <div class="font-bold text-emerald-700 flex items-center"><i class="fa-solid fa-check-circle mr-1.5"></i>Criterio Cumple</div>
+                                <p class="text-slate-700 leading-relaxed">${row.cumple}</p>
+                            </div>
+                            <div class="space-y-1.5 p-3 rounded-lg bg-red-50/50 border border-red-100">
+                                <div class="font-bold text-red-700 flex items-center"><i class="fa-solid fa-xmark-circle mr-1.5"></i>Criterio No Cumple</div>
+                                <p class="text-slate-700 leading-relaxed">${row.nocumple}</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                // Evento de Acordeón
+                const headerBtn = itemDiv.querySelector('.matrix-row-header');
+                const detailsDiv = itemDiv.querySelector('.matrix-details');
+                
+                headerBtn.addEventListener('click', () => {
+                    // Cierra los demás
+                    const allDetails = matrixContainer.querySelectorAll('.matrix-details');
+                    const allHeaders = matrixContainer.querySelectorAll('.matrix-row-header');
+                    
+                    allDetails.forEach((el, i) => {
+                        if (el !== detailsDiv && el.classList.contains('open')) {
+                            el.classList.remove('open');
+                            allHeaders[i].classList.remove('bg-slate-50', 'border-slate-100');
+                        }
+                    });
+
+                    // Alterna el actual
+                    detailsDiv.classList.toggle('open');
+                    headerBtn.classList.toggle('bg-slate-50');
+                    headerBtn.classList.toggle('border-slate-100');
+                });
+
+                matrixContainer.appendChild(itemDiv);
+            });
+
+            // Estilos Visuales de las Pestañas Laterales
+            tabs.forEach(tab => {
+                const target = tab.dataset.target;
+                const titleDiv = tab.querySelector('.tab-title');
+                const badgeSpan = tab.querySelector('.tab-badge');
+
+                // Reset de clases
+                tab.classList.remove('border-brand-red', 'bg-red-50', 'border-sky-500', 'bg-sky-50', 'border-emerald-500', 'bg-emerald-50', 'border-slate-400', 'bg-slate-600', 'border-red-600', 'bg-red-100');
+                tab.classList.add('border-transparent');
+                
+                if(target === 'administrativo' && target !== key) { tab.classList.add('bg-slate-800'); titleDiv.className = 'text-sm font-bold text-white transition tab-title'; badgeSpan.className = 'tab-badge bg-slate-600 text-white text-xs font-black px-2 py-1 rounded';}
+                else if(target === 'inaceptables' && target !== key) { tab.classList.add('bg-red-50'); titleDiv.className = 'text-sm font-bold text-red-700 transition tab-title flex items-center'; badgeSpan.className = 'tab-badge bg-red-200 text-red-800 text-xs font-black px-2 py-1 rounded'; }
+                else if (target !== key) { tab.classList.add('bg-white'); titleDiv.className = 'text-sm font-bold text-slate-600 transition tab-title'; badgeSpan.className = 'tab-badge bg-slate-200 text-slate-600 text-xs font-black px-2 py-1 rounded'; }
+
+                // Activar pestaña seleccionada
+                if (target === key) {
+                    tab.classList.remove('border-transparent', 'bg-white', 'bg-slate-800', 'bg-red-50');
+                    if(key === 'solucion') { tab.classList.add('border-brand-red', 'bg-red-50'); titleDiv.className = 'text-sm font-bold text-brand-dark transition tab-title'; badgeSpan.className = 'tab-badge bg-brand-red text-white text-xs font-black px-2 py-1 rounded';}
+                    else if(key === 'tiempos') { tab.classList.add('border-sky-500', 'bg-sky-50'); titleDiv.className = 'text-sm font-bold text-sky-900 transition tab-title'; badgeSpan.className = 'tab-badge bg-sky-500 text-white text-xs font-black px-2 py-1 rounded';}
+                    else if(key === 'emociones') { tab.classList.add('border-emerald-500', 'bg-emerald-50'); titleDiv.className = 'text-sm font-bold text-emerald-900 transition tab-title'; badgeSpan.className = 'tab-badge bg-emerald-500 text-white text-xs font-black px-2 py-1 rounded';}
+                    else if(key === 'administrativo') { tab.classList.add('border-slate-500', 'bg-slate-700'); titleDiv.className = 'text-sm font-bold text-white transition tab-title'; badgeSpan.className = 'tab-badge bg-slate-500 text-white text-xs font-black px-2 py-1 rounded';}
+                    else if(key === 'inaceptables') { tab.classList.add('border-red-600', 'bg-red-100'); titleDiv.className = 'text-sm font-bold text-red-900 transition tab-title flex items-center'; badgeSpan.className = 'tab-badge bg-red-600 text-white text-xs font-black px-2 py-1 rounded';}
+                }
+            });
+        }
+
+        // --- 3. LÓGICA DEL SLIDER HORIZONTAL ---
+        let currentSlide = 0;
+        const totalSlides = 4;
+        const sliderWrapper = document.getElementById('slider');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const headerNavs = document.querySelectorAll('.nav-btn');
+
+        function updateSlider() {
+            // Desplazamiento basado en Viewport Width (100vw por slide)
+            sliderWrapper.style.transform = `translateX(-${currentSlide * 100}vw)`;
+            
+            prevBtn.disabled = currentSlide === 0;
+            nextBtn.disabled = currentSlide === totalSlides - 1;
+
+            headerNavs.forEach((btn, index) => {
+                if(index === currentSlide) {
+                    btn.classList.add('active');
+                    btn.classList.replace('text-slate-500', 'text-brand-red');
+                } else {
+                    btn.classList.remove('active');
+                    btn.classList.replace('text-brand-red', 'text-slate-500');
+                }
+            });
+        }
+
+        // Asignación de Eventos
+        prevBtn.addEventListener('click', () => { if (currentSlide > 0) { currentSlide--; updateSlider(); } });
+        nextBtn.addEventListener('click', () => { if (currentSlide < totalSlides - 1) { currentSlide++; updateSlider(); } });
+        
+        headerNavs.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                currentSlide = parseInt(e.currentTarget.dataset.index);
+                updateSlider();
+            });
+        });
+
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                renderMatrix(tab.dataset.target);
+            });
+        });
+
+        // Inicialización de la aplicación
+        updateSlider();
+        renderMatrix('solucion');
+
+    </script>
+</body>
+</html>
